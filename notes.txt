@@ -1,0 +1,60 @@
+The grid above can be partitioned into 5 L-shaped “hooks”. The largest is 5-by-5 (contains 9 squares), the next largest is 4-by-4 (contains 7 squares), and so on. The smallest hook is just a single square. Find where the hooks are located, and place five 5’s in one of the hooks, four 4’s in another, three 3’s in another, two 2's in another and one 1 in another. It is important to note that the five 5s can be placed in any of the L-shaped "hooks" that have at least five squares. For example, you could place three 3's in the 5-by-5 L-shaped "hook" but you cannot place five 5s in the 2-by-2 L-shaped "hook". 
+
+The filled squares must form a connected region. (Squares are “connected” if they are orthogonally adjacent.) Furthermore, every 2-by-2 region must contain at least one unfilled square.
+
+The clues in the grid are placed in cells that are not filled in the completed grid. A number in the grid represents the sum of all values in orthogonally adjacent cells in the completed grid.
+
+The answer to this puzzle is the product of the areas of the connected groups of empty squares in the completed grid.
+
+
+
+
+
+Use backtracking
+
+def fill_l_shape 
+
+shape_index avail_cells num num_left avail_shape_indices
+
+for shape_index in range(1,6):
+  cells = get_cells(i)
+  num = 5
+  num_left = 5
+  call_func i cells num num_left
+
+call_func 
+----
+# check if num_left > avail_cells which makes it impossible
+
+if num == 0:
+  # we finished all of them. Could check for empty avail_shape_indices too
+  # check if matrix is valid.
+    - all one block
+    - at least one empty in all 2x2 squares
+
+if num_left = 0
+  for shape_index in avail_shape_indices:
+    cells = get_cells(shape_index)
+    new_avail_shape_indices = avail_shape_indices.pop(shape_index)
+    call_func shape_index cells num-1 num-1 new_avail_shape_indices
+
+for cell in avail_cells:
+  # place cell
+  matrix[cell[0]][cell[1]] = num
+  # TODO: check valid placement (not on clue cell and doesn't break 2x2 square rule)
+  # TODO: create new avail_cells since we placed 
+  call_func shape_index new_avail_cells num num_left-1 avail_shape_indice
+  # TODO: add cell back 
+  # TODO: update avail cells
+
+  
+
+
+Iterate over each L shape (1-5)
+ - Iterate over each cell in the L shape and use it as a starting point
+ - place cell
+ - check validity
+    - Remove cell & cont
+ - Iterate over other cells and place cell
+ - go level deeper with L-Shape options minus the current and num - 1
+Try and place 5s in each cell 
