@@ -174,10 +174,19 @@ def find_adj_clues(row, col):
     adj_clue_cells = get_valid_adj_cells(row, col, clues_only=True)
     return adj_clue_cells
 
-def check_clue_is_valid(clue_cell, addition=0):
-    cur_sum = sum_adj_cells(clue_cell[0], clue_cell[1])
+def check_clue_is_valid(clue_cell, addition, new_row, new_col):
+    sum = 0
+    num_empty_cells = 0
+    adj_cells = get_valid_adj_cells(clue_cell[0], clue_cell[1])
+    for r, c in adj_cells:
+        sum += matrix[r][c]
+        if matrix[r][c] == 0:
+            num_empty_cells += 1
+
     target = clues[clue_cell]
-    if cur_sum + addition > target:
+    if sum + addition > target:
+        return False
+    elif num_empty_cells == 1 and (sum + addition) != target:
         return False
     return True
 
@@ -194,28 +203,24 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
         # 1. all one block
         # 2. at least one empty in 2x2 squares
         # TODO: Check here
-        matrix_hash = get_hash_matrix(matrix)
-        if matrix_hash not in solutions:
-            # TODO: do final validations:
-            # 1. All on shape
-            # 2. Check that clues line up
-            all_clues_valid, num_valid = check_all_clues_valid()
-            
-            if num_valid > (.75 * len(clues)):
-                print_matrix(matrix)
-                output_matrix_to_file(matrix, not_valid=True)
 
-            if not all_clues_valid:
-                return 
+        # TODO: do final validations:
+        # 1. All on shape
+        # 2. Check that clues line up
+        all_clues_valid, num_valid = check_all_clues_valid()
         
-            # Set hash so we don't processs it again
-            solutions.add(matrix_hash)
-
+        if num_valid > (.75 * len(clues)):
             print_matrix(matrix)
-            output_matrix_to_file(matrix)
-            
-            counter["count"] += 1
-            log(f'COUNT: {counter["count"]}')
+            output_matrix_to_file(matrix, not_valid=True)
+
+        if not all_clues_valid:
+            return
+
+        print_matrix(matrix)
+        output_matrix_to_file(matrix)
+        
+        counter["count"] += 1
+        log(f'COUNT: {counter["count"]}')
 
         return True
 
@@ -239,7 +244,7 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
             clue_cells = find_adj_clues(row, col)
             all_clues_valid = True
             for clue_cell in clue_cells:
-                if not check_clue_is_valid(clue_cell, num):
+                if not check_clue_is_valid(clue_cell, num, row, col):
                     #log(f'Cannot fill. Breaks clue cell: {clue_cell[0]} : {clue_cell[1]}')
                     all_clues_valid = False
                     break
