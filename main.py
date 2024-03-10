@@ -35,85 +35,7 @@ cache = {
     "cache": set()
 }
 
-if LENGTH == 9:
-    clues = {
-        (0,1): 18,
-        (0,6): 7,
-        (1,4): 12,
-        (2,2): 9,
-        (2,7): 31,
-        (4,1): 5,
-        (4,3): 11,
-        (4,5): 22,
-        (4,7): 22,
-        (6,1): 9,
-        (6,6): 19,
-        (7,4): 14,
-        (8,2): 22,
-        (8,7): 15,
-    }
-elif LENGTH == 5:
-    clues = {
-        (0,0): 0,
-        (2,0): 8,
-        (4,0): 10,
-        (1,2): 9,
-        (3,2): 15,
-        (1,4): 7,
-        (3,4): 12,
-    }
-
-solutions = { 
-
-}
-
-counter = {
-    "count": 0
-}
-
-logging = True
-
-def log(msg):
-    if not logging:
-        return
-    print(msg)
-
-def output_matrix_to_file(matrix):
-    slice = int(sys.argv[1])
-    file_name = os.path.join(os.path.dirname(__file__), f'matrix-{slice}.txt')
-    with open(file_name, 'a') as file:
-        for row in matrix:
-            file.write(' '.join(str(cell) for cell in row) + '\n')
-        file.write('---------\n')
-
-    os.system(SMS_COMMAND)
-    
-
-
-def print_matrix(matrix):
-    if not logging:
-        return
-    print('------')
-    for row in matrix:
-        print(row)
-    print('------')
-
-def get_hash_matrix(matrix):
-    hash_matrix = ""
-    for row in matrix:
-        hash_matrix += "".join(str(cell) for cell in row)
-    return hash(hash_matrix)
-
-def check_all_clues_valid():
-    for clue_coord, target in clues.items():
-        r, c = clue_coord
-        clue_sum = sum_adj_cells(r, c)
-        if clue_sum != target:
-            return False
-    return True
-
-def has_valid_squares(row, col):
-    squares = [
+squares = [
         [
             # upper left square
             (-1, -1), # top left
@@ -140,6 +62,64 @@ def has_valid_squares(row, col):
         ],
     ]
 
+clues = shapes_creator.CLUES
+
+solutions = set()
+
+counter = {
+    "count": 0
+}
+
+logging = True
+
+def log(msg):
+    if not logging:
+        return
+    print(msg)
+
+def output_matrix_to_file(matrix, not_valid=False):
+    slice = int(sys.argv[1])
+    if not_valid:
+        file_name = os.path.join(os.path.dirname(__file__), f'matrix-possible-{slice}.txt')
+    else:
+        file_name = os.path.join(os.path.dirname(__file__), f'matrix-{slice}.txt')
+    with open(file_name, 'a') as file:
+        for row in matrix:
+            file.write(' '.join(str(cell) for cell in row) + '\n')
+        file.write('---------\n')
+
+    if not_valid:
+        return
+    os.system(SMS_COMMAND)
+    
+
+
+def print_matrix(matrix):
+    if not logging:
+        return
+    print('------')
+    for row in matrix:
+        print(row)
+    print('------')
+
+def get_hash_matrix(matrix):
+    hash_matrix = ""
+    for row in matrix:
+        hash_matrix += "".join(str(cell) for cell in row)
+    return hash(hash_matrix)
+
+def check_all_clues_valid():
+    count = 0
+    for clue_coord, target in clues.items():
+        r, c = clue_coord
+        clue_sum = sum_adj_cells(r, c)
+        if clue_sum != target:
+            return False, count
+        count += 1
+
+    return True, count
+
+def has_valid_squares(row, col):
     all_squares_valid = True
     for square_directions in squares:
         num_empty = 0
@@ -147,7 +127,7 @@ def has_valid_squares(row, col):
         for direction in square_directions:
             r = row + direction[0]
             c = col + direction[1]
-            if r < 0 or r >= len(matrix[0]) or c < 0 or c >= len(matrix):
+            if r < 0 or r >= LENGTH or c < 0 or c >= LENGTH:
                 full_square = False
                 break
             if matrix[r][c] == 0:
@@ -160,7 +140,7 @@ def has_valid_squares(row, col):
 
     return all_squares_valid
 
-def get_valid_adj_cells(row, col):
+def get_valid_adj_cells(row, col, clues_only=False):
     cells = []
     directions = [
         (-1, 0), # above
@@ -171,9 +151,15 @@ def get_valid_adj_cells(row, col):
     for direction in directions:
         r = row + direction[0]
         c = col + direction[1]
-        if r < 0 or r >= len(matrix) or c < 0 or c >= len(matrix[r]):
+        if r < 0 or r >= LENGTH or c < 0 or c >= LENGTH:
             continue
-        cells.append((r,c))
+        
+        if clues_only:
+            if (r,c) in clues:
+                cells.append((r,c))
+        else:
+            cells.append((r,c))
+
     return cells
 
 def sum_adj_cells(row, col):
@@ -185,12 +171,8 @@ def sum_adj_cells(row, col):
     return sum
 
 def find_adj_clues(row, col):
-    clue_cells = []
-    adj_cells = get_valid_adj_cells(row, col)
-    for r, c in adj_cells:
-        if (r, c) in clues:
-            clue_cells.append((r,c))
-    return clue_cells
+    adj_clue_cells = get_valid_adj_cells(row, col, clues_only=True)
+    return adj_clue_cells
 
 def check_clue_is_valid(clue_cell, addition=0):
     cur_sum = sum_adj_cells(clue_cell[0], clue_cell[1])
@@ -217,11 +199,18 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
             # TODO: do final validations:
             # 1. All on shape
             # 2. Check that clues line up
-            all_clues_valid = check_all_clues_valid()
-            solutions[matrix_hash] = copy.deepcopy(matrix)
+            all_clues_valid, num_valid = check_all_clues_valid()
+            
+            if num_valid > (.75 * len(clues)):
+                print_matrix(matrix)
+                output_matrix_to_file(matrix, not_valid=True)
+
             if not all_clues_valid:
                 return 
-            
+        
+            # Set hash so we don't processs it again
+            solutions.add(matrix_hash)
+
             print_matrix(matrix)
             output_matrix_to_file(matrix)
             
@@ -232,9 +221,6 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
 
     elif nums_left == 0:
 
-        if num < 2:
-            print_matrix(matrix)
-            
         # we filled all the shapes for this block and need to move on.
         for i, shape_index in enumerate(available_shape_indices):
             new_num = num - 1
@@ -248,11 +234,6 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
         for i, cell in enumerate(available_cells):
             row = cell[0]
             col = cell[1]
-
-            # TODO: Check if this is a clue cell
-            if (row, col) in clues:
-                #log(f'Cannot fill: {row} : {col}')
-                continue
 
             # TODO: CHeck if this breaks a clue. Meaning by placing the cell it would result in a larger than possible clue
             clue_cells = find_adj_clues(row, col)
@@ -274,16 +255,11 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
             # Place num in cell
             matrix[row][col] = num
 
-            matrix_hash = get_hash_matrix(matrix)
-            if matrix_hash in cache["cache"]:
-                matrix[row][col] = 0
-                return
-        
-            cache["cache"].add(matrix_hash)
-
+            # print_matrix(matrix)
+            # time.sleep(1)
 
             # remove cell from available_ceels
-            new_avail_cells = available_cells[:i] + available_cells[i+1:]
+            new_avail_cells = available_cells[i+1:]
             
             fill_shape(_, new_avail_cells, num, nums_left - 1, available_shape_indices)
 
@@ -323,17 +299,13 @@ def main():
     
     for i, item in enumerate(slice_shapes):
         print('FORM: ', i + start)
+        
         m, cur_shapes = item
-        # print_matrix(m)
         shapes['shapes'] = cur_shapes
-        all_shape_indices = list(range(0, len(cur_shapes)))
+        all_shape_indices = list(reversed(list(range(0, len(cur_shapes)))))
 
         for i, shape_index in enumerate(all_shape_indices):
-            # reset the cache each shape
-            cache["cache"] = set()
-
             available_cells = get_cells(shape_index)
-
             num = len(cur_shapes)  # Example number to fill
             nums_left = num  # Example number of shapes left to fill
             new_avail_shape_indices = all_shape_indices[:i] + all_shape_indices[i+1:]

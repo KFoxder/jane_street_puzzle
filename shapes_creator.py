@@ -14,6 +14,34 @@ solutions = []
 
 LENGTH = 9
 
+if LENGTH == 9:
+    CLUES = {
+        (0,1): 18,
+        (0,6): 7,
+        (1,4): 12,
+        (2,2): 9,
+        (2,7): 31,
+        (4,1): 5,
+        (4,3): 11,
+        (4,5): 22,
+        (4,7): 22,
+        (6,1): 9,
+        (6,6): 19,
+        (7,4): 14,
+        (8,2): 22,
+        (8,7): 15,
+    }
+elif LENGTH == 5:
+    CLUES = {
+        (0,0): 0,
+        (2,0): 8,
+        (4,0): 10,
+        (1,2): 9,
+        (3,2): 15,
+        (1,4): 7,
+        (3,4): 12,
+    }
+
 DIRECTIONS = [
     (-1, 0), # down
     (0, 1), # right
@@ -36,6 +64,9 @@ def matrix_to_list_of_lists(matrix):
     value_lists = [[] for _ in range(max_value)]  # Adjusted to not include an index for 0
     for i, row in enumerate(matrix):
         for j, value in enumerate(row):
+            # do not add clue spaces
+            if (i,j) in CLUES:
+                continue
             value_lists[value-1].append((i, j))  # Adjusted index to match value starting from 1
     return value_lists
 
