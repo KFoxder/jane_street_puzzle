@@ -12,7 +12,7 @@ counter = {
 
 solutions = []
 
-LENGTH = 5
+LENGTH = 9
 
 DIRECTIONS = [
     (-1, 0), # down

@@ -3,6 +3,7 @@ import shapes_creator
 import sys
 import time
 import os
+import random
 
 LENGTH = shapes_creator.LENGTH
 
@@ -226,12 +227,13 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
             
             counter["count"] += 1
             log(f'COUNT: {counter["count"]}')
-            exit(0)
-
 
         return True
 
     elif nums_left == 0:
+
+        if num < 2:
+            print_matrix(matrix)
             
         # we filled all the shapes for this block and need to move on.
         for i, shape_index in enumerate(available_shape_indices):
@@ -312,15 +314,15 @@ def main():
     slice = int(sys.argv[1])
     total_slices = int(sys.argv[2])
     all_shapes = shapes_creator.main()
-    start, stop = cutoff_intervals_for_four_groups(all_shapes, total_slices)[slice - 1]
+    start, stop = cutoff_intervals_for_four_groups(all_shapes, total_slices)[slice]
     slice_shapes = all_shapes[start:stop]
+    random.shuffle(slice_shapes)
 
     print("TOTAL: ", len(slice_shapes))
     
     for i, item in enumerate(slice_shapes):
         print('FORM: ', i)
         m, cur_shapes = item
-        cur_shapes = list(reversed(cur_shapes))
         # print_matrix(m)
         shapes['shapes'] = cur_shapes
         cache["cache"] = set()
