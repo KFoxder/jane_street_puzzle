@@ -164,14 +164,14 @@ def get_valid_adj_cells(row, col):
     cells = []
     directions = [
         (-1, 0), # above
+        (1, 0), # below
         (0, -1), # left
         (0, 1), # right
-        (1, 0), # below
     ]
     for direction in directions:
         r = row + direction[0]
         c = col + direction[1]
-        if r < 0 or r >= len(matrix[0]) or c < 0 or c >= len(matrix):
+        if r < 0 or r >= len(matrix) or c < 0 or c >= len(matrix[r]):
             continue
         cells.append((r,c))
     return cells
@@ -239,6 +239,7 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
         for i, shape_index in enumerate(available_shape_indices):
             new_num = num - 1
             new_avail_cells = get_cells(shape_index)
+
             new_avail_shape_indices = available_shape_indices[:i] + available_shape_indices[i+1:]
 
             fill_shape(_, new_avail_cells, new_num, new_num, new_avail_shape_indices)
@@ -269,7 +270,6 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
             valid_squares = has_valid_squares(row, col)
             if not valid_squares:
                 continue
-
 
             # Place num in cell
             matrix[row][col] = num
@@ -319,17 +319,21 @@ def main():
     random.shuffle(slice_shapes)
 
     print("TOTAL: ", len(slice_shapes))
+    print(f"Start: {start} Stop: {stop}")
     
     for i, item in enumerate(slice_shapes):
-        print('FORM: ', i)
+        print('FORM: ', i + start)
         m, cur_shapes = item
         # print_matrix(m)
         shapes['shapes'] = cur_shapes
-        cache["cache"] = set()
         all_shape_indices = list(range(0, len(cur_shapes)))
 
         for i, shape_index in enumerate(all_shape_indices):
+            # reset the cache each shape
+            cache["cache"] = set()
+
             available_cells = get_cells(shape_index)
+
             num = len(cur_shapes)  # Example number to fill
             nums_left = num  # Example number of shapes left to fill
             new_avail_shape_indices = all_shape_indices[:i] + all_shape_indices[i+1:]
