@@ -268,6 +268,36 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
     
     return False
 
+
+def get_start_shapes_indices(cur_shapes, num):
+
+    if num == 9:
+        points = [
+            (1,7),
+            (3,7),
+            (2,8),
+            (2,6),
+        ]
+    else:
+        points = [
+            (2,2),
+            (4,2),
+            (3,1),
+            (3,3)
+        ]
+
+    all_indices = []
+    start_indices = []
+    for index, list_points in enumerate(cur_shapes):
+        all_indices.append(index)
+        for point in points:
+            if point in list_points:
+                start_indices.append(index)
+
+    assert len(start_indices) == 4
+
+    return all_indices, start_indices
+
 def main():
     def cutoff_intervals_for_four_groups(lst, num):
         """
@@ -301,14 +331,18 @@ def main():
         print('FORM: ', i + start)
         
         m, cur_shapes = item
-        shapes['shapes'] = cur_shapes
-        all_shape_indices = list(reversed(list(range(0, len(cur_shapes)))))
 
-        for i, shape_index in enumerate(all_shape_indices):
+        shapes['shapes'] = cur_shapes
+
+        # print_matrix(m)
+        
+        all_shape_indices, start_shape_indices = get_start_shapes_indices(cur_shapes, LENGTH)
+
+        for shape_index in start_shape_indices:
             available_cells = get_cells(shape_index)
-            num = len(cur_shapes)  # Example number to fill
+            num = LENGTH  # Example number to fill
             nums_left = num  # Example number of shapes left to fill
-            new_avail_shape_indices = all_shape_indices[:i] + all_shape_indices[i+1:]
+            new_avail_shape_indices = all_shape_indices[:shape_index] + all_shape_indices[shape_index+1:]
             
             fill_shape(shape_index, available_cells, num, nums_left, new_avail_shape_indices)
 
