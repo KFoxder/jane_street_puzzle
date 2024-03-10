@@ -322,13 +322,12 @@ def main():
     all_shapes = shapes_creator.main()
     start, stop = cutoff_intervals_for_four_groups(all_shapes, total_slices)[slice]
     slice_shapes = all_shapes[start:stop]
-    random.shuffle(slice_shapes)
 
     print("TOTAL: ", len(slice_shapes))
     print(f"Start: {start} Stop: {stop}")
     
     for i, item in enumerate(slice_shapes):
-        print('FORM: ', i + start)
+        print(f'SlICE: {slice} FORM: {i}' )
         
         m, cur_shapes = item
 

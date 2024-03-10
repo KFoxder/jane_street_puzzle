@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the number of processes to spawn
-num_processes=16
+num_processes=12
 
 # Loop to spawn the processes
 for ((i=0; i<num_processes; i++))
