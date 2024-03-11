@@ -4,6 +4,7 @@ import sys
 import time
 import os
 import random
+import cProfile
 
 LENGTH = shapes_creator.LENGTH
 
@@ -194,12 +195,12 @@ def check_clue_is_valid(clue_cell, addition, new_row, new_col):
 def get_cells(shape_index):
     return shapes['shapes'][shape_index]
 
-def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
+def fill_shape(shape_index, available_cells, num, nums_left, avail_nums):
     if nums_left > len(available_cells):
         # Not possilbe if there are less cells then number we have to fill.
         return False
     
-    elif nums_left == 0 and num == 1:
+    elif nums_left == 0 and shape_index == LENGTH - 1:
         # We finished filling the shape. Check for validitiy.
         # 1. all one block
         # 2. at least one empty in 2x2 squares
@@ -226,15 +227,15 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
         return True
 
     elif nums_left == 0:
+        # TODO: Once we have finished a block, check if we have finished for the tree
+        # and then check that everything is still connected. 
 
         # we filled all the shapes for this block and need to move on.
-        for i, shape_index in enumerate(available_shape_indices):
-            new_num = num - 1
-            new_avail_cells = get_cells(shape_index)
-
-            new_avail_shape_indices = available_shape_indices[:i] + available_shape_indices[i+1:]
-
-            fill_shape(_, new_avail_cells, new_num, new_num, new_avail_shape_indices)
+        new_shape_index = shape_index + 1
+        new_avail_cells = get_cells(new_shape_index)
+        for i, new_num in enumerate(avail_nums):
+            new_avail_nums = avail_nums[:i] + avail_nums[i+1:]
+            fill_shape(new_shape_index, new_avail_cells, new_num, new_num, new_avail_nums)
 
     else:
         for i, cell in enumerate(available_cells):
@@ -262,47 +263,17 @@ def fill_shape(_, available_cells, num, nums_left, available_shape_indices):
             matrix[row][col] = num
 
             # print_matrix(matrix)
-            # time.sleep(1)
+            # time.sleep(0.3)
 
             # remove cell from available_ceels
             new_avail_cells = available_cells[i+1:]
-            
-            fill_shape(_, new_avail_cells, num, nums_left - 1, available_shape_indices)
+            fill_shape(shape_index, new_avail_cells, num, nums_left - 1, avail_nums)
 
             # Add it back after recursive call
             matrix[row][col] = 0
     
     return False
 
-
-def get_start_shapes_indices(cur_shapes, num):
-
-    if num == 9:
-        points = [
-            (1,7),
-            (3,7),
-            (2,8),
-            (2,6),
-        ]
-    else:
-        points = [
-            (2,2),
-            (4,2),
-            (3,1),
-            (3,3)
-        ]
-
-    all_indices = []
-    start_indices = []
-    for index, list_points in enumerate(cur_shapes):
-        all_indices.append(index)
-        for point in points:
-            if point in list_points:
-                start_indices.append(index)
-
-    assert len(start_indices) == 4
-
-    return all_indices, start_indices
 
 def main():
     def cutoff_intervals_for_four_groups(lst, num):
@@ -331,26 +302,24 @@ def main():
 
     print("TOTAL: ", len(slice_shapes))
     print(f"Start: {start} Stop: {stop}")
-    
     for i, item in enumerate(slice_shapes):
         print(f'SlICE: {slice} FORM: {i}' )
         
         m, cur_shapes = item
 
         shapes['shapes'] = cur_shapes
-
-        # print_matrix(m)
         
-        all_shape_indices, start_shape_indices = get_start_shapes_indices(cur_shapes, LENGTH)
+        shape_index = 0
+        available_cells = get_cells(shape_index=shape_index)
 
-        for shape_index in start_shape_indices:
-            available_cells = get_cells(shape_index)
-            num = LENGTH  # Example number to fill
-            nums_left = num  # Example number of shapes left to fill
-            new_avail_shape_indices = all_shape_indices[:shape_index] + all_shape_indices[shape_index+1:]
-            
-            fill_shape(shape_index, available_cells, num, nums_left, new_avail_shape_indices)
+        num = 1
+        nums_left = 1
+        avail_nums = list(range(2,LENGTH + 1))
+
+        fill_shape(shape_index, available_cells, num, nums_left, avail_nums)
 
 
 if __name__ == "__main__":
     main()
+    # pypy3 main.py 0 1  0.22s user 0.04s system 63% cpu 0.407 total
+    # pypy3 main.py 0 1  0.18s user 0.03s system 65% cpu 0.320 total
