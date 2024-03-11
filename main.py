@@ -184,9 +184,10 @@ def check_clue_is_valid(clue_cell, addition, new_row, new_col):
             num_empty_cells += 1
 
     target = clues[clue_cell]
-    if sum + addition > target:
+    new_sum = (sum + addition)
+    if new_sum > target:
         return False
-    elif num_empty_cells == 1 and (sum + addition) != target:
+    elif num_empty_cells == 1 and new_sum != target:
         return False
     return True
 
