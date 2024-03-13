@@ -52,7 +52,7 @@ class LShapeGenerator:
         return self.valid_shapes
 
     def _matrix_to_list_of_lists(self, matrix) -> list[list[tuple[int, int]]]:
-        # These lists need to be in order of smalles to largers L-Shape
+        # These lists need to be in order of smallest to largerst L-Shape
         l_shapes = [[] for _ in range(self.LENGTH)]
         for i, row in enumerate(matrix):
             for j, value in enumerate(row):
