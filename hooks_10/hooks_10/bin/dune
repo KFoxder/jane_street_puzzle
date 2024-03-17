@@ -1,0 +1,4 @@
+(executable
+ (public_name hooks_10)
+ (name main)
+ (libraries domainslib solution))

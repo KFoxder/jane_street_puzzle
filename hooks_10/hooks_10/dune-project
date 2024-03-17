@@ -1,0 +1,13 @@
+(lang dune 3.13)
+
+(name hooks_10)
+
+(generate_opam_files true)
+
+(package
+ (name hooks_10)
+ (synopsis "Jane Street Hooks 10 Solution")
+ (description "Jane Street Hooks 10 Solution")
+ (depends ocaml dune))
+
+; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project

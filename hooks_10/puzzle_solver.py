@@ -88,7 +88,7 @@ class PuzzleSolver:
                 break
 
         if not start_found:
-            return True  # The matrix is empty, hence technically contiguous
+            return False
 
         self._dfs(start_x, start_y, matrix, visited)
 

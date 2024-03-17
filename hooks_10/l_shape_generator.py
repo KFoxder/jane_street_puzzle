@@ -1,3 +1,5 @@
+import copy
+
 class LShapeGenerator:
     """
     This class is in charge of generating the different L-Shape permuations for a matrix.
@@ -28,6 +30,7 @@ class LShapeGenerator:
 
     def __init__(self) -> None:
         self.valid_shapes: list[list[tuple[int, int]]] = []
+        self.valid_matrices: list[list[list[int]]] = []
 
         # Create empty matrix
         self.matrix: list[list[int]] = []
@@ -37,6 +40,20 @@ class LShapeGenerator:
                 new_row.append(0)
             self.matrix.append(new_row)
 
+    def get_all_matrices(self) -> list[list[list[int]]]:
+        start_positions = self._get_start_positions(self.matrix)
+
+        size = (self.LENGTH * 2) - 1
+
+        for row, col in start_positions:
+            direction = self._get_start_direction(row, col)
+            self._fill_shapes(row, col, size, self.LENGTH, direction)
+            
+        # This should be equal to 4 ^ (LENGTH -1)
+        assert len(self.valid_matrices) == (4 ** (self.LENGTH - 1))
+
+        return self.valid_matrices
+    
     def get_all_shapes(self) -> list[list[list[tuple[int, int]]]]:
         start_positions = self._get_start_positions(self.matrix)
 
@@ -155,6 +172,7 @@ class LShapeGenerator:
 
             new_row, new_col = self._get_start_positions(self.matrix)[0]
             self.matrix[new_row][new_col] = num
+            self.valid_matrices.append(copy.deepcopy(self.matrix))
             self.valid_shapes.append(self._matrix_to_list_of_lists(self.matrix))
 
             self.matrix[new_row][new_col] = 0
@@ -185,3 +203,22 @@ class LShapeGenerator:
                 self._fill_shapes(next_row, next_col, num_left - 1, num, new_direction)
             # unmark cell after recursion
             self.matrix[row][col] = 0
+
+
+def output_shapes_to_file(matrices: list[list[list[tuple[int, int]]]]) -> None:
+    with open("all_shapes.txt", "w") as f:
+        for matrix in matrices:
+            for row in matrix:
+                for i, value in enumerate(row):
+                    if i == len(row) - 1:
+                        f.write(f"{value}")
+                    else:
+                        f.write(f"{value} ")
+                f.write(f"\n")
+            f.write("\n")
+
+            
+if __name__ == "__main__":
+    all_matrices = LShapeGenerator().get_all_matrices()
+    output_shapes_to_file(all_matrices)
+    
