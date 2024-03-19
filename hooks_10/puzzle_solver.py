@@ -3,6 +3,11 @@ import os
 from l_shape_generator import LShapeGenerator
 
 
+def print_matrix(matrix):
+    for row in matrix:
+        print(row)
+    print('---')
+
 class PuzzleSolver:
     LENGTH = LShapeGenerator.LENGTH
     CLUES: dict[tuple[int, int], int] = LShapeGenerator.CLUES
@@ -48,7 +53,6 @@ class PuzzleSolver:
         available_cells = self._get_cells(shape_index=0)
         avail_nums = list(range(2, self.LENGTH + 1))
         self._fill_l_shape(
-            l_shape_index=0,
             available_cells=available_cells,
             num=1,
             nums_left=1,
@@ -185,17 +189,16 @@ class PuzzleSolver:
 
     def _fill_l_shape(
         self,
-        l_shape_index: int,
         available_cells: list[tuple[int, int]],
         num: int,
         nums_left: int,
         avail_nums: list[int],
     ) -> None:
         if nums_left > len(available_cells):
-            # Not possilbe if there are less cells then number we have to fill.
+            # Not possible if there are less cells then number we have to fill.
             return
 
-        elif nums_left == 0 and l_shape_index == self.LENGTH - 1:
+        elif nums_left == 0 and len(avail_nums) == 0:
             # We finished filling all the shapes of the matrix.
             # Now we need to validate the matrix with a few checks.
             # 1. Are all the clues valid?
@@ -211,19 +214,19 @@ class PuzzleSolver:
             if not all_cells_connected:
                 return
 
-            # Sucess: If we have gotten here we now found the solution. Output it to a file.
+            # Success: If we have gotten here we now found the solution. Output it to a file.
+            print("Solution Found!")
             self._output_matrix_to_file(self.matrix)
             exit(0)  # Stop processing once we find solution
 
         elif nums_left == 0:
             # We filled all the cells for this L-Shape so move on to the next L-Shape.
-            new_shape_index = l_shape_index + 1
-            new_avail_cells = self._get_cells(new_shape_index)
-            for i, new_num in enumerate(avail_nums):
-                new_avail_nums = avail_nums[:i] + avail_nums[i + 1 :]
-                self._fill_l_shape(
-                    new_shape_index, new_avail_cells, new_num, new_num, new_avail_nums
-                )
+            new_num = avail_nums.pop(0)
+            new_avail_cells = self._get_cells(new_num - 1)
+            self._fill_l_shape(
+                new_avail_cells, new_num, new_num, avail_nums
+            )
+            avail_nums.insert(0, new_num)  # Add the number back to the list of available numbers.
 
         else:
             for i, cell in enumerate(available_cells):
@@ -255,10 +258,10 @@ class PuzzleSolver:
                 new_avail_cells = available_cells[i + 1 :]
                 # Continue placing nums in the current L-Shape
                 self._fill_l_shape(
-                    l_shape_index, new_avail_cells, num, nums_left - 1, avail_nums
+                    new_avail_cells, num, nums_left - 1, avail_nums
                 )
 
-                # After recursion we need to un-place the cell for backtracking.
+                # After recursion, we need to un-place the cell for backtracking.
                 self.matrix[row][col] = 0
 
         return

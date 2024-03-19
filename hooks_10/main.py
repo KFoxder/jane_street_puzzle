@@ -24,8 +24,8 @@ def get_intervals(lst, num):
 def main():
     slice = int(sys.argv[1])
     total_slices = int(sys.argv[2])
-
-    all_shapes = LShapeGenerator().get_all_shapes()
+    gen = LShapeGenerator()
+    all_shapes = gen.get_all_shapes()
     all_intervals = get_intervals(all_shapes, total_slices)
     
     interval_start, interval_stop = all_intervals[slice]
